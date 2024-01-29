@@ -18,8 +18,9 @@ conn = sqlite3.connect('orders.db')
 cursor = conn.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS orders
                (id_order INTEGER PRIMARY KEY AUTOINCREMENT,
-               id_username TEXT,
+               id_username INTEGER,
                file_id TEXT,
+               quantity INTEGER,
                size TEXT,
                description TEXT,
                price INTEGER,
@@ -31,11 +32,13 @@ conn.commit()
 
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
-    await message.answer(f'{message.from_user.full_name}, приветствуем Вас!')
+    await message.answer(f'{message.from_user.full_name}, приветствуем Вас 😊\n'
+                         'Для начала, отправьте изображение товара 📷')
 
 
 @dp.message(F.photo, ~F.caption)
 async def handle_photo(message: types.Message):
+    """Функция приема изображения."""
     # отправляет статус "Загрузка фото"
     await message.bot.send_chat_action(
         chat_id=message.chat.id,
@@ -49,7 +52,7 @@ async def handle_photo(message: types.Message):
         file_id,
         ))
     conn.commit()
-    text = "Фото успешно загружено!\nТеперь напишите размер."
+    text = "Изображение товара успешно загружено!\n Теперь введите количество товара:"
     await message.answer(text=text)
 
 
