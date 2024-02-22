@@ -1,7 +1,8 @@
 import asyncio
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart, Command
-from aiogram.enums import ChatAction
+from aiogram.enums import ChatAction, ParseMode
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from dotenv import load_dotenv
 import logging
 import os
@@ -30,10 +31,27 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS orders
 conn.commit()
 
 
+def get_new_start_kb():
+    button_1 = KeyboardButton(text="Привет!")
+    button_2 = KeyboardButton(text="Что дальше?")
+    buttons_row_first = [button_1]
+    buttons_row_second = [button_2]
+    markup = ReplyKeyboardMarkup(keyboard=[buttons_row_first,
+                                           buttons_row_second],
+                                 resize_keyboard=True)
+    return markup
+
+
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
-    await message.answer(f'{message.from_user.full_name}, приветствуем Вас 😊\n'
-                         'Для начала, отправьте изображение товара 📷')
+    text = (f'{message.from_user.full_name}, приветствуем Вас 😊\n'
+            'Для начала, отправьте изображение товара 📷')
+    await message.answer(text=text,
+                         reply_markup=get_new_start_kb(),)
+
+
+
+
 
 
 @dp.message(F.photo, ~F.caption)
@@ -52,7 +70,7 @@ async def handle_photo(message: types.Message):
         file_id,
         ))
     conn.commit()
-    text = "Изображение товара успешно загружено!\n Теперь введите количество товара:"
+    text = "Изображение товара успешно загружено!\nВведите количество товара:"
     await message.answer(text=text)
 
 
