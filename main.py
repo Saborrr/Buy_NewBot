@@ -1,9 +1,10 @@
 import asyncio
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart, Command
-from aiogram.enums import ChatAction, ParseMode
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.enums import ChatAction
+from aiogram.types import ReplyKeyboardRemove
 from dotenv import load_dotenv
+from keyboards import ButtonText, get_new_start_kb
 import logging
 import os
 import sqlite3
@@ -31,27 +32,15 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS orders
 conn.commit()
 
 
-def get_new_start_kb():
-    button_1 = KeyboardButton(text="Привет!")
-    button_2 = KeyboardButton(text="Что дальше?")
-    buttons_row_first = [button_1]
-    buttons_row_second = [button_2]
-    markup = ReplyKeyboardMarkup(keyboard=[buttons_row_first,
-                                           buttons_row_second],
-                                 resize_keyboard=True)
-    return markup
-
-
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
+    """Функция приветствия."""
     text = (f'{message.from_user.full_name}, приветствуем Вас 😊\n'
             'Для начала, отправьте изображение товара 📷')
-    await message.answer(text=text,
-                         reply_markup=get_new_start_kb(),)
-
-
-
-
+    await message.answer(
+        text=text,
+        reply_markup=get_new_start_kb(),
+        )
 
 
 @dp.message(F.photo, ~F.caption)
@@ -74,10 +63,19 @@ async def handle_photo(message: types.Message):
     await message.answer(text=text)
 
 
+@dp.message(F.text == ButtonText.WHATS_NEXT)
 @dp.message(Command("help"))
 async def handle_help(message: types.Message):
     text = "Для получения помощи напишите сюда:\n @aa_fdv"
     await message.answer(text=text)
+
+
+@dp.message(F.text == ButtonText.BYE)
+async def handle_bye(message: types.Message):
+    await message.answer(
+        text="До новых встреч! Возвращайтесь, просто нажав /start .",
+        reply_markup=ReplyKeyboardRemove()
+        )
 
 
 @dp.message()
