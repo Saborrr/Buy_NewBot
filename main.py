@@ -8,6 +8,7 @@ from keyboards import ButtonText, get_new_start_kb
 import logging
 import os
 import sqlite3
+from utils import yes_or_no
 
 
 load_dotenv()
@@ -67,6 +68,13 @@ async def handle_photo(message: types.Message):
 @dp.message(Command("help"))
 async def handle_help(message: types.Message):
     text = "Для получения помощи напишите сюда:\n @aa_fdv"
+    await message.answer(text=text)
+
+
+@dp.message(F.text == ButtonText.NEED_IT)
+@dp.message(Command("Оно мне надо?"))
+async def handle_need_it(message: types.Message):
+    text = f"Если Вы сомневаетесь, гифка вам подскажет: {yes_or_no()}"
     await message.answer(text=text)
 
 
